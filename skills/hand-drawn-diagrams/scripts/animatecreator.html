@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #ffffff; overflow: hidden; }
+    #root { display: inline-block; }
+    #root svg { display: block; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="module">
+    window.__ready = false;
+    window.__moduleError = null;
+
+    try {
+      const [excalidrawMod, animateMod] = await Promise.all([
+        import('/@excalidraw/excalidraw?bundle'),
+        import('/excalidraw-animate@0.7.1?bundle'),
+      ]);
+
+      const { exportToSvg } = excalidrawMod;
+      const { animateSvg }  = animateMod;
+
+      /**
+       * renderAnimation(jsonStr, startMs)
+       *
+       * jsonStr  — JSON string of the full .excalidraw file, with element IDs
+       *            already patched to include animateOrder:N and animateDuration:N
+       *            suffixes where needed (done by the Python caller).
+       * startMs  — initial pause before animation begins (default 500).
+       *
+       * Returns { svgString, finishedMs } on success.
+       * Returns { error } on failure.
+       */
+      window.renderAnimation = async function(jsonStr, startMs) {
+        try {
+          const data     = JSON.parse(jsonStr);
+          const elements = (data.elements || []).filter(e => !e.isDeleted);
+          const appState = data.appState || {};
+          const files    = data.files    || {};
+
+          appState.viewBackgroundColor = appState.viewBackgroundColor || '#ffffff';
+          appState.exportWithDarkMode  = false;
+          appState.exportBackground    = true;
+
+          const svg = await exportToSvg({
+            elements,
+            appState,
+            files,
+          });
+
+          const { finishedMs } = animateSvg(svg, elements, {
+            startMs: typeof startMs === 'number' ? startMs : 500,
+          });
+
+          const svgString = new XMLSerializer().serializeToString(svg);
+
+          // Also put it in the DOM so Playwright can inspect if needed
+          const root = document.getElementById('root');
+          root.innerHTML = '';
+          root.appendChild(svg);
+
+          return { svgString, finishedMs };
+        } catch (err) {
+          return { error: err?.message || String(err) };
+        }
+      };
+
+      window.__ready = true;
+    } catch (err) {
+      window.__moduleError = err?.message || String(err);
+    }
+  </script>
+</body>
+</html>

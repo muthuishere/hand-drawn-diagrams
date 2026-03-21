@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Hand Drawn Diagrams — Animate</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #f0f0f3;
+      font-family: system-ui, -apple-system, sans-serif;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      color: #1a1a2e;
+    }
+
+    /* ── Toolbar ── */
+    #toolbar {
+      background: #fff;
+      border-bottom: 1px solid #e4e4e8;
+      padding: 0 20px;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    }
+
+    #brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+    }
+    #brand-name {
+      font-size: 14px;
+      font-weight: 700;
+      color: #1a1a2e;
+      letter-spacing: -0.3px;
+    }
+    #brand-tag {
+      font-size: 11px;
+      font-weight: 600;
+      background: #6965db;
+      color: #fff;
+      padding: 2px 7px;
+      border-radius: 20px;
+      letter-spacing: 0.2px;
+    }
+
+    #divider {
+      width: 1px;
+      height: 20px;
+      background: #e4e4e8;
+    }
+
+    #status {
+      font-size: 13px;
+      color: #888;
+      flex: 1;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 14px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      transition: background 0.15s, opacity 0.15s;
+      white-space: nowrap;
+    }
+    .btn:disabled { opacity: 0.35; cursor: default; }
+
+    .btn-primary {
+      background: #6965db;
+      color: #fff;
+    }
+    .btn-primary:hover:not(:disabled) { background: #5a57c8; }
+
+    .btn-ghost {
+      background: #f4f4f6;
+      color: #444;
+    }
+    .btn-ghost:hover:not(:disabled) { background: #e8e8ec; }
+
+    /* ── Progress bar ── */
+    #progress-track {
+      height: 2px;
+      background: transparent;
+      display: none;
+    }
+    #progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #6965db, #a78bfa);
+      transition: width linear;
+    }
+
+    /* ── Canvas area ── */
+    #stage {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 36px 24px;
+    }
+
+    #root svg {
+      max-width: 100%;
+      height: auto;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04);
+    }
+
+    /* ── Empty state ── */
+    #empty {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 80px 24px;
+      color: #aaa;
+      text-align: center;
+    }
+    #empty svg { opacity: 0.3; }
+    #empty p { font-size: 15px; line-height: 1.6; }
+    #empty code {
+      background: #eee;
+      color: #555;
+      padding: 2px 7px;
+      border-radius: 5px;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="toolbar">
+    <a id="brand" href="https://github.com/muthuishere/hand-drawn-diagrams" target="_blank">
+      <span id="brand-name">✍ Hand Drawn Diagrams</span>
+      <span id="brand-tag">animate</span>
+    </a>
+    <div id="divider"></div>
+    <span id="status">Ready</span>
+    <button id="downloadBtn" class="btn btn-primary" disabled>
+      ↓ Download Animation
+    </button>
+    <button id="editBtn" class="btn btn-ghost"
+            onclick="window.location.href='edit.html' + window.location.hash">
+      ✎ Edit
+    </button>
+  </div>
+
+  <div id="progress-track"><div id="progress-fill"></div></div>
+
+  <div id="stage">
+    <div id="root">
+      <div id="empty">
+        <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#6965db" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 20h9"/>
+          <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+        </svg>
+        <p>No diagram loaded.<br>
+          Use <code>get_excalidraw_urls.py diagram.excalidraw</code> to open one here.</p>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    const statusEl      = document.getElementById('status');
+    const rootEl        = document.getElementById('root');
+    const downloadBtn   = document.getElementById('downloadBtn');
+    const progressTrack = document.getElementById('progress-track');
+    const progressFill  = document.getElementById('progress-fill');
+
+    let currentSvg = null;
+
+    // ── Decompress gzip+base64 hash ──────────────────────────────────────────
+    async function decompress(b64) {
+      const binary = atob(b64);
+      const bytes  = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+
+      const ds = new DecompressionStream('gzip');
+      const writer = ds.writable.getWriter();
+      writer.write(bytes);
+      writer.close();
+
+      const chunks = [];
+      const reader = ds.readable.getReader();
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        chunks.push(value);
+      }
+      const total  = chunks.reduce((n, c) => n + c.length, 0);
+      const result = new Uint8Array(total);
+      let off = 0;
+      for (const c of chunks) { result.set(c, off); off += c.length; }
+      return new TextDecoder().decode(result);
+    }
+
+    // ── Unpack bundle — handles both old (raw excalidraw) and new ({excalidraw, animationInfo}) ──
+    function unpack(data) {
+      if (data.excalidraw) {
+        return { excalidrawData: data.excalidraw, animationInfo: data.animationInfo || null };
+      }
+      // Legacy: the payload IS the excalidraw JSON
+      return { excalidrawData: data, animationInfo: null };
+    }
+
+    // ── Apply animationInfo by injecting ID suffixes (mirrors Python apply_animation_info) ──
+    function applyAnimationInfo(elements, animationInfo, defaultDuration) {
+      if (!animationInfo) return elements;
+
+      const overrides = {};
+      for (const entry of (animationInfo.elements || [])) {
+        if (entry.id) overrides[entry.id] = entry;
+      }
+
+      return elements.map(el => {
+        const eid = el.id || '';
+        const ov  = overrides[eid];
+        if (ov) {
+          const parts = [];
+          if ('order' in ov) parts.push(`animateOrder:${ov.order}`);
+          const dur = (ov.duration !== undefined) ? ov.duration : defaultDuration;
+          parts.push(`animateDuration:${dur}`);
+          return { ...el, id: eid + '-' + parts.join('-') };
+        }
+        return { ...el, id: `${eid}-animateDuration:${defaultDuration}` };
+      });
+    }
+
+    // ── Download animated SVG ────────────────────────────────────────────────
+    function downloadAnimation() {
+      if (!currentSvg) return;
+      const svgStr = new XMLSerializer().serializeToString(currentSvg);
+      const blob   = new Blob([svgStr], { type: 'image/svg+xml;charset=utf-8' });
+      const a      = document.createElement('a');
+      a.href       = URL.createObjectURL(blob);
+      a.download   = 'animation.svg';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      statusEl.textContent = 'Downloaded — open the .svg in any browser to play';
+    }
+
+    // ── Main ─────────────────────────────────────────────────────────────────
+    async function main() {
+      const hash = window.location.hash.slice(1);
+      if (!hash) return;
+
+      progressTrack.style.display = 'block';
+      progressFill.style.transition = 'width 0.4s ease';
+      progressFill.style.width = '20%';
+
+      statusEl.textContent = 'Decompressing…';
+      let excalidrawData, animationInfo;
+      try {
+        const raw = JSON.parse(await decompress(hash));
+        ({ excalidrawData, animationInfo } = unpack(raw));
+      } catch (e) {
+        statusEl.textContent = `Decode error: ${e.message}`;
+        progressTrack.style.display = 'none';
+        return;
+      }
+
+      progressFill.style.width = '50%';
+      statusEl.textContent = 'Loading libraries…';
+
+      let exportToSvg, animateSvg;
+      try {
+        const [excalidrawMod, animateMod] = await Promise.all([
+          import('https://esm.sh/@excalidraw/excalidraw@0.18.0?bundle'),
+          import('https://esm.sh/excalidraw-animate@0.7.1?bundle'),
+        ]);
+        exportToSvg = excalidrawMod.exportToSvg;
+        animateSvg  = animateMod.animateSvg;
+      } catch (e) {
+        statusEl.textContent = `Library error: ${e.message}`;
+        progressTrack.style.display = 'none';
+        return;
+      }
+
+      progressFill.style.width = '80%';
+      statusEl.textContent = 'Rendering…';
+
+      const rawElements  = (excalidrawData.elements || []).filter(e => !e.isDeleted);
+      const appState     = excalidrawData.appState || {};
+      const files        = excalidrawData.files    || {};
+
+      const startMs       = animationInfo?.startMs       ?? 500;
+      const defaultDur    = animationInfo?.defaultDuration ?? 500;
+      const elements      = applyAnimationInfo(rawElements, animationInfo, defaultDur);
+
+      if (animationInfo) {
+        statusEl.textContent = `Rendering with animation spec (${(animationInfo.elements||[]).length} overrides)…`;
+      }
+
+      try {
+        const svg = await exportToSvg({
+          elements,
+          appState: { ...appState, exportBackground: true,
+                      viewBackgroundColor: appState.viewBackgroundColor || '#ffffff',
+                      exportWithDarkMode: false },
+          files,
+        });
+
+        const { finishedMs } = animateSvg(svg, elements, { startMs });
+        currentSvg = svg;
+
+        rootEl.innerHTML = '';
+        rootEl.appendChild(svg);
+
+        progressFill.style.width = '100%';
+        setTimeout(() => { progressTrack.style.display = 'none'; }, 400);
+
+        const secs = (finishedMs / 1000).toFixed(1);
+        statusEl.textContent = `Animating · ${secs}s`;
+        downloadBtn.disabled = false;
+
+        setTimeout(() => { statusEl.textContent = 'Done'; }, finishedMs);
+      } catch (e) {
+        statusEl.textContent = `Render error: ${e.message}`;
+        progressTrack.style.display = 'none';
+        console.error(e);
+      }
+
+      downloadBtn.addEventListener('click', downloadAnimation);
+    }
+
+    main().catch(e => { statusEl.textContent = `Error: ${e.message}`; console.error(e); });
+  </script>
+</body>
+</html>

@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+  <title>Hand Drawn Diagrams — Edit</title>
+  <script>
+    window.EXCALIDRAW_ASSET_PATH =
+      "https://esm.sh/@excalidraw/excalidraw@0.18.0/dist/prod/";
+  </script>
+  <link
+    rel="stylesheet"
+    href="https://esm.sh/@excalidraw/excalidraw@0.18.0/dist/dev/index.css"
+  />
+  <style>
+    html, body, #root {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #ffffff;
+    }
+    #toolbar {
+      position: fixed;
+      top: 12px;
+      right: 12px;
+      z-index: 20;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      padding: 8px 12px;
+      border: 1px solid #e4e4e8;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.97);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.10);
+      font: 13px/1.2 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    #toolbar-brand {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding-right: 8px;
+      border-right: 1px solid #e4e4e8;
+      margin-right: 2px;
+      text-decoration: none;
+    }
+    #toolbar-brand-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: #1a1a2e;
+    }
+    #toolbar-brand-tag {
+      font-size: 10px;
+      font-weight: 600;
+      background: #6965db;
+      color: #fff;
+      padding: 2px 6px;
+      border-radius: 20px;
+    }
+    #toolbar button {
+      border: 1px solid #e0e0e4;
+      border-radius: 8px;
+      background: #ffffff;
+      color: #1e1e1e;
+      padding: 7px 13px;
+      cursor: pointer;
+      font: inherit;
+      font-weight: 500;
+      transition: background 0.15s;
+    }
+    #toolbar button:hover:not(:disabled) { background: #f4f4f6; }
+    #toolbar button:disabled { opacity: 0.35; cursor: default; }
+    #toolbar button.primary {
+      background: #6965db;
+      color: #fff;
+      border-color: #6965db;
+    }
+    #toolbar button.primary:hover:not(:disabled) { background: #5a57c8; }
+    #status {
+      color: #888;
+      white-space: nowrap;
+      font-size: 12px;
+    }
+    #loading-overlay {
+      position: fixed;
+      inset: 0;
+      background: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      flex-direction: column;
+      gap: 12px;
+    }
+    #loading-overlay .loading-brand {
+      font-size: 18px;
+      font-weight: 700;
+      color: #1a1a2e;
+      letter-spacing: -0.3px;
+    }
+    #loading-overlay .loading-brand span {
+      background: #6965db;
+      color: #fff;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: 20px;
+      margin-left: 6px;
+      vertical-align: middle;
+    }
+    #loading-msg {
+      font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: #888;
+    }
+    #loading-overlay.hidden { display: none; }
+  </style>
+  <script type="importmap">
+    {
+      "imports": {
+        "react": "https://esm.sh/react@19.0.0",
+        "react/jsx-runtime": "https://esm.sh/react@19.0.0/jsx-runtime",
+        "react-dom": "https://esm.sh/react-dom@19.0.0",
+        "react-dom/client": "https://esm.sh/react-dom@19.0.0/client"
+      }
+    }
+  </script>
+</head>
+<body>
+  <div id="loading-overlay">
+    <div class="loading-brand">✍ Hand Drawn Diagrams<span>edit</span></div>
+    <span id="loading-msg">Loading…</span>
+  </div>
+  <div id="root"></div>
+  <div id="toolbar">
+    <a id="toolbar-brand" href="https://github.com/muthuishere/hand-drawn-diagrams" target="_blank">
+      <span id="toolbar-brand-name">✍ Hand Drawn Diagrams</span>
+      <span id="toolbar-brand-tag">edit</span>
+    </a>
+    <button id="animate-btn" type="button" class="primary" disabled>▶ Animate</button>
+    <button id="download-btn" type="button" disabled>↓ Download</button>
+    <span id="status">Loading…</span>
+  </div>
+
+  <script type="module">
+    import React from "https://esm.sh/react@19.0.0";
+    import ReactDOMClient from "https://esm.sh/react-dom@19.0.0/client";
+    import * as ExcalidrawLib from "https://esm.sh/@excalidraw/excalidraw@0.18.0/dist/dev/index.js?external=react,react-dom,react-dom/client";
+
+    const { Excalidraw, serializeAsJSON, MIME_TYPES } = ExcalidrawLib;
+
+    const overlay     = document.getElementById('loading-overlay');
+    const loadingMsg  = document.getElementById('loading-msg');
+    const statusEl    = document.getElementById('status');
+    const downloadBtn = document.getElementById('download-btn');
+    const animateBtn  = document.getElementById('animate-btn');
+
+    // ── Compress current scene → gzip+base64 hash ────────────────────────────
+    async function compress(jsonStr) {
+      const bytes  = new TextEncoder().encode(jsonStr);
+      const cs     = new CompressionStream('gzip');
+      const writer = cs.writable.getWriter();
+      writer.write(bytes);
+      writer.close();
+
+      const chunks = [];
+      const reader = cs.readable.getReader();
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        chunks.push(value);
+      }
+      const total  = chunks.reduce((n, c) => n + c.length, 0);
+      const result = new Uint8Array(total);
+      let off = 0;
+      for (const c of chunks) { result.set(c, off); off += c.length; }
+
+      // btoa requires a binary string
+      let binary = '';
+      for (const byte of result) binary += String.fromCharCode(byte);
+      return btoa(binary);
+    }
+
+    // ── Decompress gzip+base64 hash ──────────────────────────────────────────
+    async function decompress(b64) {
+      const binary = atob(b64);
+      const bytes  = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+
+      const ds = new DecompressionStream('gzip');
+      const writer = ds.writable.getWriter();
+      writer.write(bytes);
+      writer.close();
+
+      const chunks = [];
+      const reader = ds.readable.getReader();
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        chunks.push(value);
+      }
+      const total  = chunks.reduce((n, c) => n + c.length, 0);
+      const result = new Uint8Array(total);
+      let off = 0;
+      for (const c of chunks) { result.set(c, off); off += c.length; }
+      return new TextDecoder().decode(result);
+    }
+
+    // ── Unpack bundle — handles both old (raw excalidraw) and new ({excalidraw, animationInfo}) ──
+    function unpack(data) {
+      if (data.excalidraw) {
+        return { excalidrawData: data.excalidraw, animationInfo: data.animationInfo || null };
+      }
+      return { excalidrawData: data, animationInfo: null };
+    }
+
+    // ── Main ─────────────────────────────────────────────────────────────────
+    async function main() {
+      const hash = window.location.hash.slice(1);
+
+      if (!hash) {
+        loadingMsg.textContent = 'No diagram in URL. Use the launcher script to open a file here.';
+        return;
+      }
+
+      // Decode
+      let excalidrawData, animationInfo;
+      try {
+        loadingMsg.textContent = 'Decompressing...';
+        const raw = JSON.parse(await decompress(hash));
+        ({ excalidrawData, animationInfo } = unpack(raw));
+      } catch (e) {
+        loadingMsg.textContent = `Decode error: ${e.message}`;
+        return;
+      }
+
+      const initialData = {
+        elements:        excalidrawData.elements  || [],
+        appState:        excalidrawData.appState  || {},
+        files:           excalidrawData.files     || {},
+        scrollToContent: true,
+      };
+
+      loadingMsg.textContent = 'Starting editor...';
+
+      // Download handler — exports current canvas as .excalidraw
+      let excalidrawAPI = null;
+      downloadBtn.addEventListener('click', () => {
+        if (!excalidrawAPI) return;
+        const serialized = serializeAsJSON(
+          excalidrawAPI.getSceneElementsIncludingDeleted(),
+          excalidrawAPI.getAppState(),
+          excalidrawAPI.getFiles(),
+          'local',
+        );
+        const blob = new Blob([serialized], { type: MIME_TYPES.excalidraw });
+        const a    = document.createElement('a');
+        a.href     = URL.createObjectURL(blob);
+        a.download = 'diagram.excalidraw';
+        a.click();
+        statusEl.textContent = 'Downloaded';
+      });
+
+      // Animate button — bundle current canvas + original animationInfo → animate.html
+      animateBtn.addEventListener('click', async () => {
+        if (!excalidrawAPI) return;
+        animateBtn.disabled  = true;
+        statusEl.textContent = 'Encoding...';
+        try {
+          const sceneJson = serializeAsJSON(
+            excalidrawAPI.getSceneElementsIncludingDeleted(),
+            excalidrawAPI.getAppState(),
+            excalidrawAPI.getFiles(),
+            'local',
+          );
+          const bundle = { excalidraw: JSON.parse(sceneJson) };
+          if (animationInfo) bundle.animationInfo = animationInfo;
+          const newHash = await compress(JSON.stringify(bundle));
+          window.location.href = 'animate.html#' + newHash;
+        } catch (e) {
+          statusEl.textContent = `Error: ${e.message}`;
+          animateBtn.disabled  = false;
+        }
+      });
+
+      // Render
+      ReactDOMClient.createRoot(document.getElementById('root')).render(
+        React.createElement(
+          'div',
+          { style: { width: '100%', height: '100%' } },
+          React.createElement(Excalidraw, {
+            initialData,
+            excalidrawAPI: (api) => {
+              excalidrawAPI = api;
+              overlay.classList.add('hidden');
+              downloadBtn.disabled = false;
+              animateBtn.disabled  = false;
+              statusEl.textContent = 'Ready';
+              // Fit all elements into view once rendering settles
+              setTimeout(() => {
+                api.scrollToContent(api.getSceneElements(), { fitToViewport: true });
+              }, 150);
+            },
+          }),
+        ),
+      );
+    }
+
+    main().catch(e => {
+      loadingMsg.textContent = `Error: ${e.message}`;
+      console.error(e);
+    });
+  </script>
+</body>
+</html>

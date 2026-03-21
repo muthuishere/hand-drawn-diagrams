@@ -1,0 +1,109 @@
+"""Open an Excalidraw file as an animation in the browser.
+
+Usage:
+    cd {skill-root}/scripts
+    uv run python animate_excalidraw.py <path-to-file.excalidraw>
+
+The diagram is gzip-compressed, base64-encoded, and passed as a URL hash to
+the hosted animation app.  No extra dependencies beyond the existing venv.
+
+Once GitHub Pages is live, set GITHUB_PAGES_URL below and the local server is
+no longer needed — the script will just open the remote URL directly.
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import sys
+import webbrowser
+from pathlib import Path
+
+from hosted_scene_urls import ANIMATE_URL, encode_diagram
+
+# Set this to your GitHub Pages URL once deployed, e.g.:
+# "https://youruser.github.io/hand-drawn-diagrams/hostedapp/animate.html"
+GITHUB_PAGES_URL: str | None = ANIMATE_URL
+
+# Path to animate.html relative to this script (used for local serving)
+_SCRIPT_DIR   = Path(__file__).parent
+_ANIMATE_HTML = _SCRIPT_DIR.parent.parent.parent / "hostedapp" / "animate.html"
+def open_with_github_pages(hash_data: str) -> None:
+    url = f"{GITHUB_PAGES_URL}#{hash_data}"
+    print(f"Opening: {GITHUB_PAGES_URL}")
+    webbrowser.open(url)
+
+
+def open_with_local_server(hash_data: str) -> None:
+    """Serve animate.html locally (needed for ESM imports — file:// blocks CORS)."""
+    try:
+        from local_excalidraw_server import LocalExcalidrawServer
+    except ImportError:
+        # Fallback: add script dir to path for installed copies
+        sys.path.insert(0, str(_SCRIPT_DIR))
+        from local_excalidraw_server import LocalExcalidrawServer  # type: ignore[no-redef]
+
+    html = _ANIMATE_HTML.read_text(encoding="utf-8")
+
+    server = LocalExcalidrawServer(
+        pages={"/animate.html": (html, "text/html; charset=utf-8")},
+    )
+    server.start()
+
+    url = f"{server.url_for('/animate.html')}#{hash_data}"
+    print(f"Serving locally: {server.url_for('/animate.html')}")
+    print("Opening browser... Press Ctrl+C to stop the server when done.")
+
+    webbrowser.open(url)
+
+    try:
+        # Keep server alive so the browser can load the HTML
+        import time
+        while True:
+            time.sleep(1)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        server.close()
+        print("Server stopped.")
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Animate an Excalidraw file in browser")
+    parser.add_argument("input", type=Path, help="Path to .excalidraw JSON file")
+    args = parser.parse_args()
+
+    if not args.input.exists():
+        print(f"ERROR: File not found: {args.input}", file=sys.stderr)
+        sys.exit(1)
+
+    # Quick sanity check
+    try:
+        data = json.loads(args.input.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as e:
+        print(f"ERROR: Invalid JSON: {e}", file=sys.stderr)
+        sys.exit(1)
+
+    if not data.get("elements"):
+        print("ERROR: No elements found in diagram.", file=sys.stderr)
+        sys.exit(1)
+
+    hash_data = encode_diagram(args.input)
+    size_kb   = len(hash_data) / 1024
+    print(f"Encoded size: {size_kb:.1f} KB")
+
+    if size_kb > 2000:
+        print("WARNING: Encoded data exceeds 2 MB — some browsers may truncate the URL.")
+
+    if GITHUB_PAGES_URL:
+        open_with_github_pages(hash_data)
+    else:
+        if not _ANIMATE_HTML.exists():
+            print(f"ERROR: animate.html not found at {_ANIMATE_HTML}", file=sys.stderr)
+            print("Either set GITHUB_PAGES_URL in this script, or run from the repo root.", file=sys.stderr)
+            sys.exit(1)
+        open_with_local_server(hash_data)
+
+
+if __name__ == "__main__":
+    main()

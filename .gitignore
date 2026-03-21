@@ -1,0 +1,16 @@
+.setup_complete
+*.log
+node_modules
+dist
+.agents
+.claude
+.claude_cache
+_bmad
+.bmad_cache
+_bmad-output
+.github/skills
+.opencode
+design-artifacts
+__pycache__
+*.pyc
+.venv

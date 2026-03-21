@@ -10,9 +10,6 @@ AI skill for turning ideas, notes, systems, and flows into hand-drawn diagrams â
 
 You describe what you want. The AI picks the right diagram type, draws it in Excalidraw's sketch style, validates the layout, and hands you a live hosted URL. From there you can edit it in a browser, watch it animate, download the source, or export a PNG.
 
-Hosted pages:
-- Editor: https://muthuishere.github.io/hand-drawn-diagrams/docs/edit.html
-- Animator: https://muthuishere.github.io/hand-drawn-diagrams/docs/animate.html
 
 ## How it's different from using Excalidraw directly
 

@@ -6,7 +6,7 @@ import json
 from pathlib import Path
 
 
-PAGES_BASE_URL = "https://muthuishere.github.io/hand-drawn-diagrams/docs"
+PAGES_BASE_URL = "https://muthuishere.github.io/hand-drawn-diagrams"
 EDIT_URL = f"{PAGES_BASE_URL}/edit.html"
 ANIMATE_URL = f"{PAGES_BASE_URL}/animate.html"
 

@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Hand Drawn Diagrams</title>
+  <meta name="description" content="Hosted editor and animation pages for the Hand Drawn Diagrams skill." />
+  <style>
+    :root {
+      --paper: #f6f0e6;
+      --ink: #1f1b17;
+      --muted: #665f57;
+      --card: rgba(255, 252, 246, 0.82);
+      --line: rgba(31, 27, 23, 0.14);
+      --accent: #2f6b57;
+      --accent-2: #bb6b3d;
+      --shadow: 0 18px 60px rgba(42, 32, 20, 0.12);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top left, rgba(187, 107, 61, 0.16), transparent 28%),
+        radial-gradient(circle at right 18%, rgba(47, 107, 87, 0.14), transparent 24%),
+        linear-gradient(180deg, #fbf6ed 0%, var(--paper) 100%);
+      font-family: Georgia, "Times New Roman", serif;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.28;
+      background-image:
+        linear-gradient(rgba(31, 27, 23, 0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(31, 27, 23, 0.03) 1px, transparent 1px);
+      background-size: 100% 38px, 38px 100%;
+    }
+
+    .wrap {
+      width: min(1080px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 40px 0 56px;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 24px;
+      align-items: stretch;
+    }
+
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(8px);
+    }
+
+    .intro {
+      padding: 34px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .eyebrow {
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      background: rgba(255, 255, 255, 0.48);
+    }
+
+    h1 {
+      margin: 18px 0 14px;
+      font-size: clamp(2.6rem, 5vw, 4.6rem);
+      line-height: 0.95;
+      letter-spacing: -0.05em;
+    }
+
+    .lede {
+      margin: 0;
+      max-width: 56ch;
+      color: var(--muted);
+      font-size: 1.06rem;
+      line-height: 1.7;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 28px;
+    }
+
+    .action {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 52px;
+      padding: 0 18px;
+      border-radius: 16px;
+      border: 1px solid var(--line);
+      text-decoration: none;
+      color: var(--ink);
+      font-size: 0.98rem;
+      background: rgba(255, 255, 255, 0.66);
+    }
+
+    .action.primary {
+      background: var(--accent);
+      color: #f8f6f1;
+      border-color: transparent;
+    }
+
+    .notes {
+      padding: 24px;
+      display: grid;
+      gap: 14px;
+    }
+
+    .note {
+      padding: 18px;
+      border-radius: 18px;
+      border: 1px dashed var(--line);
+      background: rgba(255, 255, 255, 0.5);
+    }
+
+    .note strong {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 1rem;
+    }
+
+    .note p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .footer {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 18px;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    code {
+      padding: 2px 7px;
+      border-radius: 999px;
+      background: rgba(31, 27, 23, 0.07);
+      font-family: "SFMono-Regular", Menlo, monospace;
+      font-size: 0.9em;
+    }
+
+    @media (max-width: 840px) {
+      .hero {
+        grid-template-columns: 1fr;
+      }
+
+      .wrap {
+        width: min(100% - 20px, 1080px);
+        padding-top: 20px;
+      }
+
+      .intro,
+      .notes {
+        padding: 22px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <script>
+    if (window.location.hash) {
+      window.location.replace("./edit.html" + window.location.hash);
+    }
+  </script>
+  <main class="wrap">
+    <section class="hero">
+      <article class="panel intro">
+        <span class="eyebrow">Hosted Skill Pages</span>
+        <h1>Hand Drawn Diagrams</h1>
+        <p class="lede">
+          This GitHub Pages site hosts the editor and animator used by the skill.
+          Skill scripts encode the diagram into the URL hash, then open these pages
+          directly in the browser.
+        </p>
+        <div class="actions">
+          <a class="action primary" href="./edit.html">Open Editor</a>
+          <a class="action" href="./animate.html">Open Animator</a>
+          <a class="action" href="https://github.com/muthuishere/hand-drawn-diagrams">View Repository</a>
+        </div>
+      </article>
+
+      <aside class="panel notes">
+        <section class="note">
+          <strong>Editor</strong>
+          <p>Use <code>/docs/edit.html</code> for interactive editing and downloading the current <code>.excalidraw</code> file.</p>
+        </section>
+        <section class="note">
+          <strong>Animator</strong>
+          <p>Use <code>/docs/animate.html</code> to preview the sketch animation and download the animated SVG.</p>
+        </section>
+        <section class="note">
+          <strong>Hash Redirect</strong>
+          <p>If a diagram hash lands on the site root, this page forwards it to the editor automatically.</p>
+        </section>
+      </aside>
+    </section>
+
+    <div class="footer">
+      <span>GitHub Pages source: <code>main</code> branch, <code>/docs</code> folder</span>
+      <span>Repo: <a href="https://github.com/muthuishere/hand-drawn-diagrams">muthuishere/hand-drawn-diagrams</a></span>
+    </div>
+  </main>
+</body>
+</html>

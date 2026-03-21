@@ -6,6 +6,7 @@ This file tracks what is already done in GitHub and what still needs to be done 
 
 - GitHub repo is public
 - GitHub repo description is set
+- Hosted app source lives in `docs/` for GitHub Pages
 - GitHub topics are set:
   - `agent-skills`
   - `claude-code`
@@ -21,6 +22,7 @@ This file tracks what is already done in GitHub and what still needs to be done 
 - Add the README demo GIF near the top of `README.md`
 - Add 2 to 3 strong PNG outputs under `docs/assets/`
 - Add a GitHub social preview image in repository settings
+- Confirm GitHub Pages is serving from `main` / `docs`
 
 ## Manual Submission Plan
 

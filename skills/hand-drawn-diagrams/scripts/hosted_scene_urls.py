@@ -6,8 +6,9 @@ import json
 from pathlib import Path
 
 
-EDIT_URL = "https://muthuishere.github.io/hand-drawn-diagrams/hostedapp/edit.html"
-ANIMATE_URL = "https://muthuishere.github.io/hand-drawn-diagrams/hostedapp/animate.html"
+PAGES_BASE_URL = "https://muthuishere.github.io/hand-drawn-diagrams/docs"
+EDIT_URL = f"{PAGES_BASE_URL}/edit.html"
+ANIMATE_URL = f"{PAGES_BASE_URL}/animate.html"
 
 
 def encode_bundle(

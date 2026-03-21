@@ -20,41 +20,10 @@ from hosted_scene_urls import EDIT_URL, encode_diagram
 
 GITHUB_PAGES_URL: str | None = EDIT_URL
 
-_SCRIPT_DIR = Path(__file__).parent
-_EDIT_HTML  = _SCRIPT_DIR.parent.parent.parent / "hostedapp" / "edit.html"
 def open_with_github_pages(hash_data: str) -> None:
     url = f"{GITHUB_PAGES_URL}#{hash_data}"
     print(f"Opening: {GITHUB_PAGES_URL}")
     webbrowser.open(url)
-
-
-def open_with_local_server(hash_data: str) -> None:
-    try:
-        from local_excalidraw_server import LocalExcalidrawServer
-    except ImportError:
-        sys.path.insert(0, str(_SCRIPT_DIR))
-        from local_excalidraw_server import LocalExcalidrawServer  # type: ignore[no-redef]
-
-    html = _EDIT_HTML.read_text(encoding="utf-8")
-    server = LocalExcalidrawServer(
-        pages={"/edit.html": (html, "text/html; charset=utf-8")},
-    )
-    server.start()
-
-    url = f"{server.url_for('/edit.html')}#{hash_data}"
-    print(f"Serving locally: {server.url_for('/edit.html')}")
-    print("Opening browser... Press Ctrl+C to stop the server when done.")
-    webbrowser.open(url)
-
-    try:
-        import time
-        while True:
-            time.sleep(1)
-    except KeyboardInterrupt:
-        pass
-    finally:
-        server.close()
-        print("Server stopped.")
 
 
 def main() -> None:
@@ -79,13 +48,11 @@ def main() -> None:
     if size_kb > 2000:
         print("WARNING: Encoded data exceeds 2 MB — some browsers may truncate the URL.")
 
-    if GITHUB_PAGES_URL:
-        open_with_github_pages(hash_data)
-    else:
-        if not _EDIT_HTML.exists():
-            print(f"ERROR: edit.html not found at {_EDIT_HTML}", file=sys.stderr)
-            sys.exit(1)
-        open_with_local_server(hash_data)
+    if not GITHUB_PAGES_URL:
+        print("ERROR: Hosted edit URL is not configured.", file=sys.stderr)
+        sys.exit(1)
+
+    open_with_github_pages(hash_data)
 
 
 if __name__ == "__main__":

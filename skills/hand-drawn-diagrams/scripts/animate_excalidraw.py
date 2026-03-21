@@ -22,50 +22,13 @@ from pathlib import Path
 from hosted_scene_urls import ANIMATE_URL, encode_diagram
 
 # Set this to your GitHub Pages URL once deployed, e.g.:
-# "https://youruser.github.io/hand-drawn-diagrams/hostedapp/animate.html"
+# "https://youruser.github.io/hand-drawn-diagrams/docs/animate.html"
 GITHUB_PAGES_URL: str | None = ANIMATE_URL
 
-# Path to animate.html relative to this script (used for local serving)
-_SCRIPT_DIR   = Path(__file__).parent
-_ANIMATE_HTML = _SCRIPT_DIR.parent.parent.parent / "hostedapp" / "animate.html"
 def open_with_github_pages(hash_data: str) -> None:
     url = f"{GITHUB_PAGES_URL}#{hash_data}"
     print(f"Opening: {GITHUB_PAGES_URL}")
     webbrowser.open(url)
-
-
-def open_with_local_server(hash_data: str) -> None:
-    """Serve animate.html locally (needed for ESM imports — file:// blocks CORS)."""
-    try:
-        from local_excalidraw_server import LocalExcalidrawServer
-    except ImportError:
-        # Fallback: add script dir to path for installed copies
-        sys.path.insert(0, str(_SCRIPT_DIR))
-        from local_excalidraw_server import LocalExcalidrawServer  # type: ignore[no-redef]
-
-    html = _ANIMATE_HTML.read_text(encoding="utf-8")
-
-    server = LocalExcalidrawServer(
-        pages={"/animate.html": (html, "text/html; charset=utf-8")},
-    )
-    server.start()
-
-    url = f"{server.url_for('/animate.html')}#{hash_data}"
-    print(f"Serving locally: {server.url_for('/animate.html')}")
-    print("Opening browser... Press Ctrl+C to stop the server when done.")
-
-    webbrowser.open(url)
-
-    try:
-        # Keep server alive so the browser can load the HTML
-        import time
-        while True:
-            time.sleep(1)
-    except KeyboardInterrupt:
-        pass
-    finally:
-        server.close()
-        print("Server stopped.")
 
 
 def main() -> None:
@@ -95,14 +58,11 @@ def main() -> None:
     if size_kb > 2000:
         print("WARNING: Encoded data exceeds 2 MB — some browsers may truncate the URL.")
 
-    if GITHUB_PAGES_URL:
-        open_with_github_pages(hash_data)
-    else:
-        if not _ANIMATE_HTML.exists():
-            print(f"ERROR: animate.html not found at {_ANIMATE_HTML}", file=sys.stderr)
-            print("Either set GITHUB_PAGES_URL in this script, or run from the repo root.", file=sys.stderr)
-            sys.exit(1)
-        open_with_local_server(hash_data)
+    if not GITHUB_PAGES_URL:
+        print("ERROR: Hosted animate URL is not configured.", file=sys.stderr)
+        sys.exit(1)
+
+    open_with_github_pages(hash_data)
 
 
 if __name__ == "__main__":

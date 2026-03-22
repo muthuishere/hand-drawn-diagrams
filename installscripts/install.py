@@ -38,7 +38,7 @@ def repo_dir() -> Path:
 
 
 def skill_dir() -> Path:
-    return repo_dir() / "skills" / SKILL_NAME
+    return repo_dir()
 
 def setup_marker(scripts_dir: Path) -> Path:
     return scripts_dir / ".setup_complete"

@@ -3,7 +3,7 @@ setlocal
 
 set REPO_DIR=%~dp0
 if "%REPO_DIR:~-1%"=="\" set REPO_DIR=%REPO_DIR:~0,-1%
-set INSTALLER=%REPO_DIR%\scripts\install.py
+set INSTALLER=%REPO_DIR%\installscripts\install.py
 
 where py >nul 2>nul
 if not errorlevel 1 (

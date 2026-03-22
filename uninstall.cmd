@@ -3,7 +3,7 @@ setlocal
 
 set REPO_DIR=%~dp0
 if "%REPO_DIR:~-1%"=="\" set REPO_DIR=%REPO_DIR:~0,-1%
-set UNINSTALLER=%REPO_DIR%\scripts\uninstall.py
+set UNINSTALLER=%REPO_DIR%\installscripts\uninstall.py
 
 where py >nul 2>nul
 if not errorlevel 1 (

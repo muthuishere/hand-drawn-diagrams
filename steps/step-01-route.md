@@ -41,17 +41,22 @@ Always:
 
 ## Delivery mode — set this before drawing
 
-Read the user's request and note the delivery mode:
+Read the user's request and infer the **open mode** for `open_diagram.py`:
 
-| What user asked for | Delivery mode |
-|---|---|
-| just a diagram / default | `edit-url` — deliver hosted edit URL, offer video at end |
-| animation / video / animated | `video` — still draw first, then render animated SVG |
-| image / PNG / screenshot | `png` — still draw first, then screenshot via Chrome DevTools MCP |
+| What user asked for | `--mode` to pass | What happens |
+|---|---|---|
+| just a diagram / default / "show me" / "open" | `edit` | Redirect to hosted Excalidraw editor |
+| "watch it animate" / "open animation" / "show animation" | `animate` | Redirect to hosted animation view |
+| "save the file" / "save as excalidraw" / "keep the source" | `save-excalidraw` | Copy `.excalidraw` to project |
+| "animation video" / "animated SVG" / "save animation" | `save-animation` | Render + save `.animated.svg` to project |
+| "save image" / "export PNG" / "save PNG" | `save-image` | Render + save `.png` to project |
+| "show image" / "open image" / "open PNG" | `open-image` | Render `.png`, save it, open with system viewer |
 
-**Critical order for `video` or `png` mode:**
+**One mode per request.** If the user says "animate and save it", pick `save-animation` (the file is the primary ask).
+
+**Critical order for any render mode (`save-animation`, `save-image`, `open-image`):**
 1. Complete the diagram (step-02 writes the `.excalidraw` file)
-2. Validate and get the URL (step-03)
-3. **Then** render the video or PNG — never before the diagram exists
+2. Validate (step-03 pre-flight)
+3. **Then** call `open_diagram.py` with the right mode — never before the diagram exists
 
 Do not skip to rendering. The `.excalidraw` file must exist and validate clean first.

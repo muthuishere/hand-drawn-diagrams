@@ -17,25 +17,30 @@
   </diagram-rules>
 
   <delivery-modes>
-    <mode id="edit-url" trigger="default — no explicit output format requested">
-      <step order="1">Draw and write the .excalidraw file (step-02)</step>
-      <step order="2">Validate and deliver hosted edit URL (step-03)</step>
-      <step order="3">Offer: "Want a video version? I can render it as an animated diagram (~10s)"</step>
+    <rule>Infer the mode from the first prompt. Pass it as --mode to open_diagram.py in step-03. Never render before the .excalidraw file is written and validated.</rule>
+
+    <mode id="edit" open_diagram_flag="--mode edit" trigger="default; show me; open; just a diagram; no explicit output format">
+      <action>open_diagram.py --mode edit → writes open-edit.html (instant redirect to hosted Excalidraw editor) → opens in browser</action>
     </mode>
 
-    <mode id="video" trigger="user says: animation, video, animated, draw itself">
-      <step order="1">Draw and write the .excalidraw file (step-02)</step>
-      <step order="2">Validate and deliver hosted edit URL (step-03)</step>
-      <step order="3">Render animated SVG — Chrome DevTools MCP preferred, Playwright fallback</step>
-      <step order="4">Save .animated.svg to user workspace (always)</step>
-      <rule>Never render before the diagram is drawn and validated. The .excalidraw file must exist first.</rule>
+    <mode id="animate" open_diagram_flag="--mode animate" trigger="open animation; watch it animate; show animation; view animated">
+      <action>open_diagram.py --mode animate → writes open-animate.html (instant redirect to hosted animation view) → opens in browser</action>
     </mode>
 
-    <mode id="png" trigger="user says: image, PNG, screenshot, picture">
-      <step order="1">Draw and write the .excalidraw file (step-02)</step>
-      <step order="2">Validate and deliver hosted edit URL (step-03)</step>
-      <step order="3">Screenshot via Chrome DevTools MCP — navigate animate URL, wait for SVG, take screenshot</step>
-      <rule>Never render before the diagram is drawn and validated. The .excalidraw file must exist first.</rule>
+    <mode id="save-excalidraw" open_diagram_flag="--mode save-excalidraw --dest {project}" trigger="save the file; save as excalidraw; keep the source; download the diagram">
+      <action>open_diagram.py --mode save-excalidraw → copies .excalidraw (and .animationinfo.json if present) to project directory</action>
+    </mode>
+
+    <mode id="save-animation" open_diagram_flag="--mode save-animation --dest {project}" trigger="save animation; animation video; animated SVG; save video">
+      <action>open_diagram.py --mode save-animation → renders and saves .animated.svg to project directory (always workspace, never /tmp)</action>
+    </mode>
+
+    <mode id="save-image" open_diagram_flag="--mode save-image --dest {project}" trigger="save image; export PNG; save PNG; export image">
+      <action>open_diagram.py --mode save-image → renders and saves .png to project directory</action>
+    </mode>
+
+    <mode id="open-image" open_diagram_flag="--mode open-image --dest {project}" trigger="show image; open image; open PNG; view image">
+      <action>open_diagram.py --mode open-image → renders .png, saves to project directory, opens with system viewer</action>
     </mode>
   </delivery-modes>
 

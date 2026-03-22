@@ -30,7 +30,7 @@ File location rule:
 - After delivering the URL, offer to save the source if it's in temp
 
 Default handoff pattern (fast path first, everything else opt-in):
-1. Deliver the hosted edit URL immediately after validation passes
+1. Run `open_diagram.py` — writes `open.html` alongside the diagram and opens it in the browser. Deliver the local `file://` path as a clickable link. Do not paste the raw hosted URL (it is too long to be useful).
 2. Offer animation: "Want a video version? I can render it as an animated diagram that draws itself (~10s)"
 3. If user wants a PNG image: use Chrome DevTools MCP to screenshot the animate URL — fast, no Playwright
 4. Run `render_animated_svg.py` only if Chrome DevTools MCP is unavailable

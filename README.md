@@ -4,6 +4,16 @@ AI skill for turning ideas, notes, systems, and flows into hand-drawn diagrams �
 
 ![Demo](assets/demo.gif)
 
+### Example output
+
+Static PNG — exported on request:
+
+![Example diagram](assets/diagram.png)
+
+Animated SVG — draws itself stroke by stroke ([view](assets/diagram.animated.svg)):
+
+![Exam revision diagram](assets/thermal-physics-exam-revision.animated.svg)
+
 ## What this is
 
 **hand-drawn-diagrams** is an AI skill (for Claude Code, Codex CLI, and compatible agents) that takes a natural language prompt and produces a hand-drawn diagram you can edit, animate, and share — without opening any app.
@@ -37,14 +47,18 @@ This skill is not a replacement for Excalidraw — it sits on top of it. Every d
 
 ## Output
 
-Default delivery — no installs, fast path:
+The agent infers what you want from your prompt and routes to the right output automatically:
 
-1. **Hosted edit URL** — open and edit in a browser, download the `.excalidraw` source. No local app needed.
-2. **Animate URL** — click Animate in the editor to watch the diagram draw itself stroke by stroke.
-3. **Animated SVG** — saved to your project when you ask for a video version. Plays in any browser, no app needed.
-4. **PNG** — rendered on request via Chrome DevTools MCP (fast) or Playwright (fallback).
+| What you ask for | What you get |
+|---|---|
+| "create a diagram" / default | Browser opens to hosted Excalidraw editor — edit, tweak, download |
+| "open the animation" | Browser opens animated view — diagram draws itself stroke by stroke |
+| "save as excalidraw" | `.excalidraw` source file saved to your project |
+| "save the animation" | `.animated.svg` saved to your project — plays in any browser |
+| "save image" | `.png` saved to your project |
+| "show image" | `.png` rendered and opened with your system viewer |
 
-Source files (`.excalidraw`) go to `/tmp/hand-drawn-diagrams/` by default — your workspace stays clean.
+Source files go to `/tmp/hand-drawn-diagrams/` by default — your workspace stays clean.
 
 ## Install
 

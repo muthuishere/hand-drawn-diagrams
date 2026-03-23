@@ -62,10 +62,14 @@ Source files go to `/tmp/hand-drawn-diagrams/` by default — your workspace sta
 
 ## Install
 
+### Option 1 — install.sh (Claude Code and Codex CLI)
+
+Detects `claude` and `codex` on your `PATH` and installs to the right location automatically.
+
 macOS / Linux
 
 ```bash
-git clone git@github.com:muthuishere/hand-drawn-diagrams.git
+git clone https://github.com/muthuishere/hand-drawn-diagrams.git
 cd hand-drawn-diagrams
 bash install.sh
 ```
@@ -73,25 +77,49 @@ bash install.sh
 Windows
 
 ```cmd
-git clone git@github.com:muthuishere/hand-drawn-diagrams.git
+git clone https://github.com/muthuishere/hand-drawn-diagrams.git
 cd hand-drawn-diagrams
 install.cmd
 ```
 
-The installer detects Claude Code and Agent CLI targets automatically and prints a capability summary.
+### Option 2 — npx skills add (40+ agents)
+
+Works for Claude Code, Codex, OpenCode, Windsurf, GitHub Copilot, Cursor, Gemini CLI, and more. Automatically detects which agents you have installed.
+
+```bash
+# Project scope (committed with your repo)
+npx skills add muthuishere/hand-drawn-diagrams
+
+# Global scope (available in every project)
+npx skills add muthuishere/hand-drawn-diagrams -g
+
+# Specific agents only
+npx skills add muthuishere/hand-drawn-diagrams -a claude-code -a opencode
+```
+
+### Option 3 — Manual
+
+For any agent not covered above, see [MANUAL-INSTALL.md](MANUAL-INSTALL.md).
 
 ## Uninstall
 
-macOS / Linux
+**install.sh** (macOS / Linux)
 
 ```bash
 bash uninstall.sh
 ```
 
-Windows
+**install.sh** (Windows)
 
 ```cmd
 uninstall.cmd
+```
+
+**npx skills**
+
+```bash
+npx skills remove hand-drawn-diagrams      # project
+npx skills remove hand-drawn-diagrams -g   # global
 ```
 
 ## Credits and acknowledgements

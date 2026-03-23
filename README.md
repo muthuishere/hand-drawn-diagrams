@@ -2,7 +2,7 @@
 
 AI skill for turning ideas, notes, systems, and flows into hand-drawn diagrams — with a hosted edit URL, animated video, and PNG, all from a single prompt.
 
-**Jump to:** [What this is](#what-this-is) · [Output](#output) · [Install](#install) · [Uninstall](#uninstall) · [Credits](#credits-and-acknowledgements)
+**Jump to:** [What this is](#what-this-is) · [Output](#output) · [Quick start](#quick-start) · [Credits](#credits-and-acknowledgements)
 
 ![Demo](assets/demo.gif)
 
@@ -62,67 +62,15 @@ The agent infers what you want from your prompt and routes to the right output a
 
 Source files go to `/tmp/hand-drawn-diagrams/` by default — your workspace stays clean.
 
-## Install
-
-### Option 1 — npx skills add (project or global, 40+ agents)
-
-Works for Claude Code, Codex, OpenCode, Windsurf, GitHub Copilot, Cursor, Gemini CLI, and more. Automatically detects which agents you have installed.
+## Quick start
 
 ```bash
-# Project scope — committed with your repo, shared with team
 npx skills add muthuishere/hand-drawn-diagrams
-
-# Global scope — available in every project
-npx skills add muthuishere/hand-drawn-diagrams -g
-
-# Specific agents only
-npx skills add muthuishere/hand-drawn-diagrams -a claude-code -a opencode
 ```
 
-### Option 2 — install.sh (global only)
+Works for Claude Code, Codex, OpenCode, Windsurf, GitHub Copilot, Cursor, Gemini CLI, and 40+ more agents. Detects which agents you have installed automatically.
 
-For agents that follow the Claude / agent skills directory spec. Detects installed agents on your `PATH` and installs globally.
-
-macOS / Linux
-
-```bash
-git clone https://github.com/muthuishere/hand-drawn-diagrams.git
-cd hand-drawn-diagrams
-bash install.sh
-```
-
-Windows
-
-```cmd
-git clone https://github.com/muthuishere/hand-drawn-diagrams.git
-cd hand-drawn-diagrams
-install.cmd
-```
-
-### Option 3 — Manual
-
-For any agent not covered above, or to install at project scope without npm, see [MANUAL-INSTALL.md](MANUAL-INSTALL.md).
-
-## Uninstall
-
-**npx skills**
-
-```bash
-npx skills remove hand-drawn-diagrams      # project
-npx skills remove hand-drawn-diagrams -g   # global
-```
-
-**install.sh** (macOS / Linux)
-
-```bash
-bash uninstall.sh
-```
-
-**install.sh** (Windows)
-
-```cmd
-uninstall.cmd
-```
+For all install options, global vs project scope, and uninstall — see [INSTALL.md](INSTALL.md).
 
 ## Credits and acknowledgements
 

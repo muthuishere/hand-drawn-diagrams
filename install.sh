@@ -1,16 +1,13 @@
 #!/bin/sh
+set -e
 
 REPO_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
-INSTALLER="$REPO_DIR/installscripts/install.py"
+SKILL_NAME="hand-drawn-diagrams"
 
-if command -v python3 >/dev/null 2>&1; then
-  exec python3 "$INSTALLER" "$@"
-fi
-
-if command -v python >/dev/null 2>&1; then
-  exec python "$INSTALLER" "$@"
-fi
-
-echo "Python is required to run the installer."
-echo "Install Python and run this script again."
-exit 1
+for BASE in "$HOME/.agents/skills" "$HOME/.claude/skills"; do
+  mkdir -p "$BASE"
+  LINK="$BASE/$SKILL_NAME"
+  rm -rf "$LINK"
+  ln -s "$REPO_DIR" "$LINK"
+  echo "✓ linked $LINK -> $REPO_DIR"
+done

@@ -1,4 +1,5 @@
 # hand-drawn-diagrams
+[![Discord](https://img.shields.io/badge/AgentNexus-join%20the%20community-5865F2?logo=discord&logoColor=white)](https://discord.gg/V9C2kvHC8D)
 
 AI skill for turning ideas, notes, systems, and flows into hand-drawn diagrams — with a hosted edit URL, animated video, and PNG, all from a single prompt.
 
@@ -80,6 +81,11 @@ This skill stands on the shoulders of excellent open-source work:
   GitHub: [excalidraw/excalidraw](https://github.com/excalidraw/excalidraw)
 
 - **[excalidraw-animate](https://github.com/dai-shi/excalidraw-animate)** by [@dai-shi](https://github.com/dai-shi) — the animation library that renders Excalidraw diagrams as SVGs that draw themselves stroke by stroke. The animated SVG output in this skill is powered by this library.
+
+## Community
+
+Questions, ideas, or built something with this? Join **[AgentNexus](https://discord.gg/V9C2kvHC8D)** — a Discord
+for people building with AI agents and open tools. This project lives in **#hand-drawn-diagrams**.
 
 ## License
 

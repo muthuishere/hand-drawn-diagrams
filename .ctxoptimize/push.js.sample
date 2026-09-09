@@ -1,0 +1,47 @@
+#!/usr/bin/env node
+// ctx-optimize transport: PUSH (git lane) — publishes the local store tree
+// into a git-hosted store repo. To arm it:
+//   1. rename this file to push.js (and pull.js.sample to pull.js)
+//   2. set STORE_REPO_URL below (or leave "" for a local-only host dir)
+//   3. declare both in .ctxoptimize/config.json:
+//        "remote": {"push": "node .ctxoptimize/push.js",
+//                   "pull": "node .ctxoptimize/pull.js"}
+// ctx-optimize hands you env: CTX_STORE_DIR (the local store tree),
+// CTX_STORE_KEY, CTX_SCOPE_PREFIX, CTX_DIRECTION. This file is YOURS —
+// edit freely; the binary only runs the command you declared.
+// Secrets: env-var NAMES only — never hardcode or print values.
+"use strict";
+const { execFileSync } = require("node:child_process");
+const fs = require("node:fs");
+const path = require("node:path");
+const os = require("node:os");
+
+const STORE_REPO_URL = ""; // e.g. "git@github.com:your-org/ctx-stores.git"
+const HOST_DIR = path.join(os.homedir(), "ctx-stores");
+
+const src = process.env.CTX_STORE_DIR;
+const key = process.env.CTX_STORE_KEY;
+if (!src || !key) {
+  console.error("missing CTX_* env — run me via `ctx-optimize remote push`");
+  process.exit(2);
+}
+const git = (...a) => execFileSync("git", ["-C", HOST_DIR, ...a], { stdio: "inherit" });
+
+if (!fs.existsSync(path.join(HOST_DIR, ".git"))) {
+  if (STORE_REPO_URL) {
+    execFileSync("git", ["clone", STORE_REPO_URL, HOST_DIR], { stdio: "inherit" });
+  } else {
+    fs.mkdirSync(HOST_DIR, { recursive: true });
+    execFileSync("git", ["init", HOST_DIR], { stdio: "inherit" });
+  }
+} else if (STORE_REPO_URL) {
+  try { git("pull", "--ff-only"); } catch { console.log("pull skipped — pushing on top of local host state"); }
+}
+
+const dst = path.join(HOST_DIR, key);
+fs.rmSync(dst, { recursive: true, force: true });
+fs.cpSync(src, dst, { recursive: true });
+git("add", "-A");
+try { git("commit", "-m", "store: " + key); } catch { console.log("nothing to commit"); }
+if (STORE_REPO_URL) git("push");
+console.log("pushed " + key + " -> " + HOST_DIR + (STORE_REPO_URL ? " -> " + STORE_REPO_URL : " (set STORE_REPO_URL to publish to the team)"));

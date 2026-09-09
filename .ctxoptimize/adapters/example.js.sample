@@ -1,0 +1,17 @@
+#!/usr/bin/env node
+// ctx-optimize adapter template. Rename to <name>.js to arm it — every
+// .js/.py/.sh in this directory runs on `ctx-optimize add`.
+// Print ONE batch (nodes + edges) to stdout; anything invalid is rejected
+// whole. Secrets: read process.env, never hardcode values.
+const batch = {
+  producer: "example",
+  nodes: [
+    // {id: "kafka://orders", label: "orders", kind: "topic",
+    //  file_type: "messaging", source: "kafka://orders"}
+  ],
+  edges: [
+    // {source: "kafka://orders", target: "svc://billing",
+    //  relation: "consumed_by", confidence: "EXTRACTED"}
+  ],
+};
+console.log(JSON.stringify(batch));

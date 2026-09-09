@@ -90,3 +90,10 @@ for people building with AI agents and open tools. This project lives in **#hand
 ## License
 
 MIT — see [LICENSE](LICENSE).
+
+---
+
+Built and maintained by **[deemwar](https://examples.deemwar.com)** — we build messaging and
+browser automation, and the plumbing that keeps it delivering when it silently stops.
+
+Need help with this, or something like it in production? **io@deemwar.com**

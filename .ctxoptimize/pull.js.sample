@@ -1,0 +1,47 @@
+#!/usr/bin/env node
+// ctx-optimize transport: PULL (git lane) — fetches the team's store tree
+// from a git-hosted store repo into the local store. To arm it:
+//   1. rename this file to pull.js (and push.js.sample to push.js)
+//   2. set STORE_REPO_URL below (or leave "" for a local-only host dir)
+//   3. declare both in .ctxoptimize/config.json:
+//        "remote": {"push": "node .ctxoptimize/push.js",
+//                   "pull": "node .ctxoptimize/pull.js"}
+// ctx-optimize hands you env: CTX_STORE_DIR (destination, pre-created),
+// CTX_STORE_KEY, CTX_SCOPE_PREFIX, CTX_DIRECTION. This file is YOURS —
+// edit freely; the binary only runs the command you declared.
+// Secrets: env-var NAMES only — never hardcode or print values.
+"use strict";
+const { execFileSync } = require("node:child_process");
+const fs = require("node:fs");
+const path = require("node:path");
+const os = require("node:os");
+
+const STORE_REPO_URL = ""; // e.g. "git@github.com:your-org/ctx-stores.git"
+const HOST_DIR = path.join(os.homedir(), "ctx-stores");
+
+const dst = process.env.CTX_STORE_DIR;
+const key = process.env.CTX_STORE_KEY;
+if (!dst || !key) {
+  console.error("missing CTX_* env — run me via `ctx-optimize remote pull`");
+  process.exit(2);
+}
+const git = (...a) => execFileSync("git", ["-C", HOST_DIR, ...a], { stdio: "inherit" });
+
+if (!fs.existsSync(path.join(HOST_DIR, ".git"))) {
+  if (!STORE_REPO_URL) {
+    console.error("no host repo at " + HOST_DIR + " and no STORE_REPO_URL set — nothing to pull from");
+    process.exit(1);
+  }
+  execFileSync("git", ["clone", STORE_REPO_URL, HOST_DIR], { stdio: "inherit" });
+} else if (STORE_REPO_URL) {
+  git("pull", "--ff-only");
+}
+
+const src = path.join(HOST_DIR, key);
+if (!fs.existsSync(src)) {
+  console.error("store " + key + " is not in the host repo — has anyone pushed it?");
+  process.exit(1);
+}
+fs.rmSync(dst, { recursive: true, force: true });
+fs.cpSync(src, dst, { recursive: true });
+console.log("pulled " + key + " <- " + HOST_DIR);

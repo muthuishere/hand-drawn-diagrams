@@ -47,7 +47,7 @@ Each Excalidraw element type animates differently. Know this before assigning du
 
 `order` controls when an element animates relative to others.
 
-- Elements with the same `order` value animate **simultaneously**.
+- Elements with the same `order` value are drawn consecutively, in array order — `order` only sets the sort position, it does not start them at the same instant.
 - Elements with lower `order` animate first.
 - `order: 1` is the first thing to appear.
 - Elements not listed in `elements[]` animate in their array creation order after all listed elements.

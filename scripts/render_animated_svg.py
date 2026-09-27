@@ -114,10 +114,12 @@ def apply_animation_info(
     to determine animation order and per-element duration.
     """
     overrides: dict[str, dict] = {}
-    for entry in anim_info.get("elements", []):
+    for i, entry in enumerate(anim_info.get("elements", [])):
         eid = entry.get("id")
-        if eid:
-            overrides[eid] = entry
+        if not eid:
+            print(f'ERROR: animationinfo element {i} has no "id"', file=sys.stderr)
+            sys.exit(1)
+        overrides[eid] = entry
 
     result: list[dict] = []
     for el in elements:

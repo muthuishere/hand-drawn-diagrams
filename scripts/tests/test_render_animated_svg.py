@@ -101,6 +101,15 @@ class TestApplyAnimationInfo:
         assert result[0]["id"] != "arrow1"
         assert "animateDuration:350" in result[0]["id"]
 
+    def test_entry_without_id_is_rejected(self, capsys):
+        """`elements[].id` is required — a missing id must fail, not be dropped."""
+        elements = [{"id": "box1", "type": "rectangle"}]
+        info = {"elements": [{"order": 1, "duration": 300}]}
+        with pytest.raises(SystemExit) as exc:
+            apply_animation_info(elements, info, default_duration=500)
+        assert exc.value.code == 1
+        assert 'has no "id"' in capsys.readouterr().err
+
 
 # ---------------------------------------------------------------------------
 # E2E render tests (Playwright)

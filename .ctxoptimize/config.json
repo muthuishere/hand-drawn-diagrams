@@ -1,0 +1,9 @@
+{
+  "name": "hand-drawn-diagrams",
+  "modules": [
+    {
+      "path": "scripts"
+    }
+  ],
+  "wiki": false
+}

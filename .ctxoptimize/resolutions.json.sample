@@ -1,0 +1,20 @@
+{
+  "_comment": [
+    "Declared resolutions — your answers to what the extractor REFUSES to guess.",
+    "Rename this file to resolutions.json to activate it, then commit it.",
+    "",
+    "external_methods: bare METHOD names whose receivers are never types you own.",
+    "The store holds only YOUR declarations, so it cannot tell `err.Error()` from a",
+    "call to your own Error — it abstains and shows you a shortlist instead. Listing",
+    "the name here retires that shortlist.",
+    "",
+    "It can ONLY remove maybes: it never creates a call edge and never deletes a",
+    "resolved one (`MyErr.Error()`, which names its own receiver, still resolves).",
+    "So a wrong entry costs you recall and can never make the graph wrong.",
+    "",
+    "A name that matches no call site is reported on every gather — prune it, or",
+    "this file rots into confident-looking claims about code that moved on.",
+    "Unknown keys are a hard error, not a warning."
+  ],
+  "external_methods": ["Error", "String", "Close"]
+}
